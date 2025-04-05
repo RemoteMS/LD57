@@ -1,5 +1,6 @@
 using System;
 using Services.Gameplay.Economic;
+using Services.Global.ResourceManagement;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -8,10 +9,12 @@ namespace Services.Gameplay.BulletSystem
     public class InGameEffectSystem : IDisposable
     {
         private readonly EconomicSystem _economicSystem;
+        private readonly IDataManager _resourceManager;
 
-        public InGameEffectSystem(EconomicSystem economicSystem)
+        public InGameEffectSystem(EconomicSystem economicSystem, IDataManager resourceManager)
         {
             _economicSystem = economicSystem;
+            _resourceManager = resourceManager;
         }
 
         public void TakeEffect(IEffectDealer effectDealer, IEffectable target)
@@ -39,11 +42,12 @@ namespace Services.Gameplay.BulletSystem
 
         public void TakeImpact(Vector3 impactPosition,
             Quaternion impactIdentity,
-            GameObject impactEffectPrefab,
+            string impactEffectPrefabAdress,
             Vector3 up,
             float timeToDestroy)
         {
             Debug.LogWarning($"impactEffectPrefab - {impactPosition}");
+            var impactEffectPrefab = _resourceManager.GetObjectCopyFast(impactEffectPrefabAdress);
             var impactEffect = Object.Instantiate(
                 impactEffectPrefab,
                 impactPosition,

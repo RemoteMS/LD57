@@ -166,7 +166,7 @@ namespace Services.Gameplay.BulletSystem
 
                     _inGameEffectSystem.TakeImpact(
                         impactPosition: hits[i].point,
-                        impactEffectPrefab: _projectileSettings.ImpactEffectPrefab,
+                        impactEffectPrefabAdress: _projectileSettings.ImpactEffectPrefab,
                         impactIdentity: Quaternion.identity,
                         up: hits[i].normal,
                         timeToDestroy: 2f

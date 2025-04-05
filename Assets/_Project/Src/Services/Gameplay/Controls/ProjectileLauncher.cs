@@ -3,6 +3,7 @@ using Services.Gameplay.BulletSystem;
 using UnityEngine;
 using PrimeTween;
 using Cysharp.Threading.Tasks;
+using Services.Global.Audio;
 
 namespace Services.Gameplay.Controls
 {
@@ -21,40 +22,36 @@ namespace Services.Gameplay.Controls
 
         private float _nextFireTime = 0f;
         private BulletManager _manager;
-        private Tween _currentTween; // Для отслеживания и отмены текущей анимации
+        private IAudioService _audioService;
+        private Tween _currentTween;
 
         [Inject]
-        public void Inject(BulletManager manager)
+        public void Inject(BulletManager manager, IAudioService audioService)
         {
             _manager = manager;
+            _audioService = audioService;
         }
 
         private async UniTask ShootAnimation()
         {
-            // Останавливаем предыдущую анимацию, если она есть
             if (_currentTween.isAlive)
             {
                 _currentTween.Stop();
             }
 
-            // Получаем текущую локальную позицию как начальную точку
-            Vector3 startPosition = gunRenderer.transform.localPosition;
+            var startPosition = gunRenderer.transform.localPosition;
 
-            // Сначала движемся к shoot target position
             _currentTween = Tween.LocalPosition(
                 gunRenderer.transform,
-
-                // startPosition: startPosition,
                 endValue: gunRendererShootTargetPosition.localPosition,
                 duration: animationDuration / 2f,
                 ease: Ease.InOutQuad
             );
             await _currentTween.ToUniTask();
 
-            // Затем возвращаемся к default position
+
             _currentTween = Tween.LocalPosition(
                 gunRenderer.transform,
-                // startPosition: gunRendererShootTargetPosition.localPosition,
                 endValue: gunRendererDefaultPosition.localPosition,
                 duration: animationDuration / 2f,
                 ease: Ease.InOutQuad
@@ -69,12 +66,13 @@ namespace Services.Gameplay.Controls
                 if (Time.time >= _nextFireTime)
                 {
                     _nextFireTime = Time.time + 1f / fireRate;
-                    await ShootAnimation(); // Ждем завершения анимации
+                    await ShootAnimation();
 
                     _manager.SpawnBulletPattern(
                         launchPoint.position,
                         targetPoint.position
                     );
+                    _audioService.PlayShot();
                 }
             }
         }

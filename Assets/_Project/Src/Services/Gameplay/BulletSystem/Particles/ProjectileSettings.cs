@@ -10,7 +10,7 @@ namespace Services.Gameplay.BulletSystem.Particles
         public float BulletMaxDistance = 70f;
 
         public GameObject Bullet;
-        public GameObject ImpactEffectPrefab;
+        public string ImpactEffectPrefab;
         public LayerMask CollisionMask;
 
         public ProjectileSettings(IDataManager resourceManager)
@@ -19,7 +19,7 @@ namespace Services.Gameplay.BulletSystem.Particles
 
             Bullet = resourceManager.GetObjectCopyFast(ResourcesConstants.Gameplay.World.Bullet);
 
-            ImpactEffectPrefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            ImpactEffectPrefab = ResourcesConstants.Gameplay.World.Explosion;
             CollisionMask = LayerMask.GetMask("Obstacle", "Unit");
         }
     }

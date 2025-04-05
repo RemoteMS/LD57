@@ -1,12 +1,21 @@
 using System;
+using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
 using UnityEngine.Audio;
 
 namespace Services.Global.Audio
 {
+    public enum SourceType
+    {
+        Background,
+        SFX,
+        MainGun,
+    }
+
     public class AudioService : IAudioService, IDisposable
     {
+        private Dictionary<SourceType, AudioSource> _sources = new();
         private readonly ReactiveProperty<AudioMixer> _mixer;
         private readonly CompositeDisposable _compositeDisposable = new();
 
@@ -23,6 +32,11 @@ namespace Services.Global.Audio
             _mixer.Value = mixer;
         }
 
+        public void PlayShot()
+        {
+            _sources[SourceType.MainGun].Play();
+        }
+
         public void Dispose()
         {
             _compositeDisposable?.Dispose();
@@ -31,6 +45,11 @@ namespace Services.Global.Audio
 
         public void Bind(GameObject audioSource)
         {
+        }
+
+        public void InjectSource(AudioSource source, SourceType sourceName)
+        {
+            _sources.Add(sourceName, source);
         }
 
         public void StopPlaying()

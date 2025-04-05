@@ -34,6 +34,8 @@ public static class ResourcesConstants
         public static class World
         {
             public const string Bullet = "Gameplay/World/Bullet";
+            public const string Explosion = "Gameplay/World/Explosion";
+            public const string MonsterContainer = "Gameplay/World/MonsterContainer";
         }
     }
 
