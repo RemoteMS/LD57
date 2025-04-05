@@ -4,6 +4,7 @@ using Services.Gameplay.BulletSystem;
 using Services.Gameplay.BulletSystem.Particles;
 using Services.Gameplay.Economic;
 using Services.Gameplay.Enemies;
+using Services.Gameplay.GameProcessManagement;
 
 namespace Core.DI.SceneContainerBuilders
 {
@@ -18,7 +19,8 @@ namespace Core.DI.SceneContainerBuilders
             builder.AddSingleton(typeof(RaycastBatchProcessor), typeof(RaycastBatchProcessor), typeof(IDisposable));
             builder.AddSingleton(typeof(InGameEffectSystem),    typeof(InGameEffectSystem),    typeof(IDisposable));
             builder.AddSingleton(typeof(BulletManager),         typeof(BulletManager),         typeof(IDisposable));
-            builder.AddSingleton(typeof(EconomicSystem),        typeof(EconomicSystem),         typeof(IDisposable));
+            builder.AddSingleton(typeof(EconomicSystem),        typeof(EconomicSystem),        typeof(IDisposable));
+            builder.AddSingleton(typeof(GameProcessManager),    typeof(GameProcessManager),    typeof(IDisposable));
 
             builder.OnContainerBuilt += OnBuild;
         }
@@ -26,6 +28,7 @@ namespace Core.DI.SceneContainerBuilders
         private void OnBuild(Container container)
         {
             container.Resolve<BulletManager>();
+            container.Resolve<GameProcessManager>();
         }
     }
 }
