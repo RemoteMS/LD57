@@ -57,3 +57,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20ac2146e051409ab69bc86b34a21c73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  settings:
+    bulletCount: 100
+    bulletSpeed: 10
+    bulletMaxDistance: 70
+    collisionMask:
+      serializedVersion: 2
+      m_Bits: 192
