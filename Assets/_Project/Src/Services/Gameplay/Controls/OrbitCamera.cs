@@ -6,7 +6,7 @@ namespace Services.Gameplay.Controls
     {
         [SerializeField] private Transform gunContainer;
         [SerializeField] private Transform target;
-        [SerializeField] private float rotationSpeed = 5f;
+        [SerializeField] private float horizontalRotationSpeed = 1f;
         [SerializeField] private float distance = 10f;
         [SerializeField] private float mult = 50f;
 
@@ -17,6 +17,7 @@ namespace Services.Gameplay.Controls
         private float MAX_GUN_ANGLE = 10f;
 
         [SerializeField] private float MIN_GUN_ANGLE = -40f;
+        [SerializeField] private float verticalRotationSpeed = 0.2f;
 
         private void Awake()
         {
@@ -44,24 +45,26 @@ namespace Services.Gameplay.Controls
         {
             if (!target || !gunContainer) return;
 
+            // Horizontal
             if (Input.GetKey(KeyCode.D))
             {
-                _currentAngle += rotationSpeed * Time.deltaTime * mult;
+                _currentAngle -= horizontalRotationSpeed * Time.deltaTime * mult;
             }
 
             if (Input.GetKey(KeyCode.A))
             {
-                _currentAngle -= rotationSpeed * Time.deltaTime * mult;
+                _currentAngle += horizontalRotationSpeed * Time.deltaTime * mult;
             }
 
+            // Vertical
             if (Input.GetKey(KeyCode.W))
             {
-                _gunRotationX -= rotationSpeed * Time.deltaTime * mult;
+                _gunRotationX -= verticalRotationSpeed * Time.deltaTime * mult;
             }
 
             if (Input.GetKey(KeyCode.S))
             {
-                _gunRotationX += rotationSpeed * Time.deltaTime * mult;
+                _gunRotationX += verticalRotationSpeed * Time.deltaTime * mult;
             }
 
 

@@ -5,14 +5,14 @@ namespace Services.Gameplay.BulletSystem
 {
     public class Bullet : MonoBehaviour, IEffectDealer
     {
-        public IEnumerable<Effect> Effects { get; private set; }
+        public List<Effect> Effects { get; private set; }
 
         public Vector3 direction;
         private float _maxDistance;
         private Vector3 _startPosition;
 
         public void Initialize(Vector3 position, Vector3 bulletDirection, float maxDistance,
-            IEnumerable<Effect> effects)
+            List<Effect> effects)
         {
             Effects = effects;
 

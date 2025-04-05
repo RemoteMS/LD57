@@ -4,6 +4,6 @@ namespace Services.Gameplay.BulletSystem
 {
     public interface IEffectDealer
     {
-        public IEnumerable<Effect> Effects { get; }
+        public List<Effect> Effects { get; }
     }
 }

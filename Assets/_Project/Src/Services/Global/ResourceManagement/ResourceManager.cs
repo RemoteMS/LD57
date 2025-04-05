@@ -81,6 +81,12 @@ namespace Services.Global.ResourceManagement
             return Object.Instantiate(gameObject);
         }
 
+        public GameObject GetObjectCopyFast(string address)
+        {
+            var gameObject = Resources.Load<GameObject>(address);
+            return Object.Instantiate(gameObject);
+        }
+
         public void RealizeObject(string address)
         {
             Resources.UnloadUnusedAssets();

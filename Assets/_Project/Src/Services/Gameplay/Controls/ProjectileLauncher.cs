@@ -1,9 +1,6 @@
-using System;
 using Reflex.Attributes;
-using Reflex.Extensions;
 using Services.Gameplay.BulletSystem;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Services.Gameplay.Controls
 {
@@ -26,11 +23,10 @@ namespace Services.Gameplay.Controls
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButton(0) || Input.GetKey(KeyCode.Space))
             {
                 if (Time.time >= _nextFireTime)
                 {
-                    // FireProjectile();
                     _nextFireTime = Time.time + 1f / fireRate;
 
                     _manager.SpawnBulletPattern(
@@ -39,18 +35,6 @@ namespace Services.Gameplay.Controls
                     );
                 }
             }
-        }
-
-        private void FireProjectile()
-        {
-            var projectile = Instantiate(projectilePrefab, launchPoint.position, Quaternion.identity);
-
-            var direction = (targetPoint.position - launchPoint.position).normalized;
-
-            var colliderHolder = projectile.GetComponent<ColliderHolder>();
-            var movementScript = projectile.AddComponent<ProjectileMovement>();
-
-            movementScript.Initialize(direction, projectileSpeed);
         }
     }
 

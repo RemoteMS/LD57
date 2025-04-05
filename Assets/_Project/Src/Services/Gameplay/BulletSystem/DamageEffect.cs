@@ -12,10 +12,10 @@ namespace Services.Gameplay.BulletSystem
         {
             _damageValue = damageValue;
         }
-        
+
         public override void Apply(IEffectable target)
         {
-            throw new System.NotImplementedException();
+            target.Health.Damage(_damageValue);
         }
     }
 }

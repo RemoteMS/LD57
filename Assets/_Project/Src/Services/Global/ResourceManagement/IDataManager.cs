@@ -14,6 +14,7 @@ namespace Services.Global.ResourceManagement
         UniTask<Sprite> GetSprite(string address);
         UniTask<GameObject> GetObject(string address);
         UniTask<GameObject> GetObjectCopy(string address);
+        GameObject GetObjectCopyFast(string address);
         void RealizeObject(string address);
         void DestroyAndRealizeObject(string address, GameObject gameObject);
     }

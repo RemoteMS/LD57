@@ -33,7 +33,7 @@ namespace Services.Gameplay.BulletSystem
             _inGameEffectSystem = inGameEffectSystem;
             _raycastProcessor = raycastProcessor;
 
-            var bulleta = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var bulleta = projectileSettings.Bullet;
 
             _bulletPool = new ObjectPool<Bullet>(
                 createFunc: () =>
@@ -78,8 +78,7 @@ namespace Services.Gameplay.BulletSystem
                 newBullets.Position,
                 newBullets.Direction,
                 _projectileSettings.BulletMaxDistance,
-                // weapon.bulletType.Effects
-                null
+                new List<Effect>() { new DamageEffect() }
             );
             _activeProjectiles.Add(bullet);
         }
