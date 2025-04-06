@@ -11,6 +11,7 @@ public static class ResourcesConstants
     public static class Audio
     {
         public const string AudioManager = "Audio/AudioManager";
+        public const string ScreemSource = "Audio/ScreemSource";
     
         public static class Mixers
         {

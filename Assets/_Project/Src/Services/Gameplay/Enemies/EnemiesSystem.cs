@@ -1,6 +1,5 @@
 using System;
 using Reflex.Attributes;
-using Services.Gameplay.BulletSystem;
 using Services.Gameplay.GameProcessManagement;
 using Services.Storages.Gameplay;
 using UniRx;
@@ -10,6 +9,9 @@ namespace Services.Gameplay.Enemies
 {
     public class EnemiesSystem : MonoBehaviour, IDisposable
     {
+        [SerializeField] private AudioSource AudioSourceAwake;
+        [SerializeField] private AudioClip AudioAwake;
+        
         [SerializeField] private GameObject enemyPrefab;
         [SerializeField] private float spawnInterval = 2f;
         [SerializeField] private Transform[] _spawnPoints;
@@ -65,11 +67,17 @@ namespace Services.Gameplay.Enemies
             }
 
             var spawnPoint = _spawnPoints[UnityEngine.Random.Range(0, _spawnPoints.Length)];
-            var instantiate = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
 
+            // enemy 
+            var instantiate = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
             var component = instantiate.GetComponent<Enemy>();
 
             _gameplayStorage.AddEnemy(component);
+
+
+            AudioSourceAwake.gameObject.transform.position = spawnPoint.position;
+            AudioSourceAwake.PlayOneShot(AudioAwake);
+            // Instantiate sound effect
         }
 
         public void Dispose()
