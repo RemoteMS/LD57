@@ -54,6 +54,7 @@ namespace Services.Gameplay.GameProcessManagement
                 // if (_economicSystem.)
             }
 
+#if UNITY_EDITOR
             if (Input.GetKeyDown(KeyCode.Z))
             {
                 Debug.Log("Z pressed - Starting Wave Approaching");
@@ -85,6 +86,7 @@ namespace Services.Gameplay.GameProcessManagement
                 _economicSystem.GetPriceForEnemy(new TestPricer(1000));
                 ;
             }
+#endif
         }
 
         private void OnDestroy()

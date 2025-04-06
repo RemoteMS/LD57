@@ -3,6 +3,7 @@ using Services.Gameplay.Economic;
 using UniRx;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using Services.Global.Audio;
 using UnityEngine;
 
 namespace Services.Gameplay.GameProcessManagement
@@ -26,6 +27,7 @@ namespace Services.Gameplay.GameProcessManagement
     public class GameProcessManager : IDisposable
     {
         private readonly EconomicSystem _economicSystem;
+        private readonly IAudioService _audioService;
         private readonly CompositeDisposable _disposables = new();
         private readonly List<WaveSettings> _waveSettings;
 
@@ -52,9 +54,10 @@ namespace Services.Gameplay.GameProcessManagement
 
         private const float WaveApproachingDuration = 5f; // Длительность "волна приближается" в секундах
 
-        public GameProcessManager(EconomicSystem economicSystem)
+        public GameProcessManager(EconomicSystem economicSystem, IAudioService audioService)
         {
             _economicSystem = economicSystem ?? throw new ArgumentNullException(nameof(economicSystem));
+            _audioService = audioService;
             _waveSettings = CreateDefaultWaveSettings();
 
             _currentState = new ReactiveProperty<GameState>(GameState.Calm).AddTo(_disposables);
@@ -170,7 +173,10 @@ namespace Services.Gameplay.GameProcessManagement
         public void ForceStartWaveApproaching()
         {
             if (!_isRunning.Value || IsLastWaveCompleted()) return;
+
             _currentState.Value = GameState.WaveApproaching;
+
+            _audioService.PlaySyreneComing();
             StartStateTimer(WaveApproachingDuration);
         }
 

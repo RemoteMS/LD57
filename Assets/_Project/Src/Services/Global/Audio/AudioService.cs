@@ -11,6 +11,7 @@ namespace Services.Global.Audio
         Background,
         SFX,
         MainGun,
+        InterSyren,
     }
 
     public class AudioService : IAudioService, IDisposable
@@ -30,6 +31,11 @@ namespace Services.Global.Audio
         public void InjectAudioMixer(AudioMixer mixer)
         {
             _mixer.Value = mixer;
+        }
+
+        public void PlaySyreneComing()
+        {
+            _sources[SourceType.InterSyren].Play();
         }
 
         public void PlayShot()

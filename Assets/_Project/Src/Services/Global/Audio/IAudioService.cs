@@ -12,5 +12,7 @@ namespace Services.Global.Audio
         void InjectAudioMixer(AudioMixer mixer);
         void PlayShot();
         void PlayReload();
+
+        void PlaySyreneComing();
     }
 }
