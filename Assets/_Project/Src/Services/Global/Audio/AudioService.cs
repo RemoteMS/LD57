@@ -37,6 +37,11 @@ namespace Services.Global.Audio
             _sources[SourceType.MainGun].Play();
         }
 
+        public void PlayReload()
+        {
+            Debug.LogError("AudioService::PlayReload-fix");
+        }
+
         public void Dispose()
         {
             _compositeDisposable?.Dispose();

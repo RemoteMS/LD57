@@ -13,10 +13,15 @@ namespace Services.Storages.Gameplay
         public IReadOnlyReactiveCollection<IEffectable> enemies => _enemies;
         private readonly ReactiveCollection<IEffectable> _enemies;
 
+        
+        public readonly GunData gunData;
+
         private readonly CompositeDisposable _disposables = new();
 
         public GameplayStorage()
         {
+            gunData = new GunData(new GunDataSettings()).AddTo(_disposables);
+
             _enemiesCount = new ReactiveProperty<int>(0).AddTo(_disposables);
 
             _enemies = new ReactiveCollection<IEffectable>().AddTo(_disposables);
