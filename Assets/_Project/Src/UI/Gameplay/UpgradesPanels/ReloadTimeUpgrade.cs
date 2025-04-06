@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using Reflex.Attributes;
 using Services.Gameplay.Economic;
@@ -10,7 +9,7 @@ using UnityEngine.UI;
 
 namespace UI.Gameplay.UpgradesPanels
 {
-    public class FireRateUpgrade : MonoBehaviour, IDisposable
+    public class ReloadTimeUpgrade : MonoBehaviour
     {
         [SerializeField] private Button upgradeButton;
         [SerializeField] private TMP_Text currentLevel;

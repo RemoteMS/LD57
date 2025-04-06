@@ -21,6 +21,11 @@ namespace Services.Gameplay.Economic
             _globalHealthCount = new ReactiveProperty<int>(16).AddTo(_disposables);
         }
 
+        public void SpendCoins(int amount)
+        {
+            _coinsCount.Value -= amount;
+        }
+
         public void GetPriceForEnemy(IEffectable effectable)
         {
             _coinsCount.Value += effectable.Price;
