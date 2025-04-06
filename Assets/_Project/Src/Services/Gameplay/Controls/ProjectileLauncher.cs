@@ -3,6 +3,7 @@ using Services.Gameplay.BulletSystem;
 using UnityEngine;
 using PrimeTween;
 using Cysharp.Threading.Tasks;
+using Services.Gameplay.GameProcessManagement;
 using Services.Global.Audio;
 using Services.Storages.Gameplay;
 
@@ -78,9 +79,20 @@ namespace Services.Gameplay.Controls
             _audioService.PlayReload(); // Предполагается, что в AudioService есть звук перезарядки
         }
 
+        private GameProcessManager _gameProcessManager;
+
+        [Inject]
+        public void Inject(GameProcessManager gameProcessManager)
+        {
+            _gameProcessManager = gameProcessManager;
+        }
+
         private async void Update()
         {
             if (_gunData.isReloading.Value) return;
+
+            if (_gameProcessManager.currentState.Value == GameState.Calm)
+                return;
 
             if (Input.GetMouseButton(0) || Input.GetKey(KeyCode.Space))
             {

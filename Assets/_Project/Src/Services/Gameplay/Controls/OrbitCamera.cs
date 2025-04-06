@@ -1,3 +1,5 @@
+using Reflex.Attributes;
+using Services.Gameplay.GameProcessManagement;
 using UnityEngine;
 
 namespace Services.Gameplay.Controls
@@ -21,6 +23,14 @@ namespace Services.Gameplay.Controls
 
         [SerializeField] private float MIN_GUN_ANGLE = -40f;
         [SerializeField] private float verticalRotationSpeed = 0.2f;
+
+        private GameProcessManager _gameProcessManager;
+
+        [Inject]
+        public void Inject(GameProcessManager gameProcessManager)
+        {
+            _gameProcessManager = gameProcessManager;
+        }
 
         private void Awake()
         {
@@ -48,6 +58,9 @@ namespace Services.Gameplay.Controls
         {
             if (!target || !gunContainer) return;
 
+            if (_gameProcessManager.currentState.Value == GameState.Calm)
+                return;
+            
             // Horizontal
             if (Input.GetKey(KeyCode.A)) // По часовой стрелке
             {

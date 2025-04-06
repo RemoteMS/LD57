@@ -15,6 +15,7 @@ namespace UI.Gameplay.UpgradesPanels
         [SerializeField] private TMP_Text currentLevel;
         [SerializeField] private TMP_Text cost;
         [SerializeField] private TMP_Text currentValue;
+        [SerializeField] private TMP_Text nextValue;
         [SerializeField] private TMP_Text label;
 
 
@@ -27,7 +28,8 @@ namespace UI.Gameplay.UpgradesPanels
             data.currentLevel.Subscribe(
                 x => { currentLevel.text = x.ToString(); }).AddTo(_disposables);
 
-            data.currentValue.Subscribe(x => { currentValue.text = x.ToString(CultureInfo.InvariantCulture); })
+            data.nextValue
+                .Subscribe(x => { nextValue.text = x.ToString(); })
                 .AddTo(_disposables);
 
             data.nextCost
@@ -48,6 +50,9 @@ namespace UI.Gameplay.UpgradesPanels
                 .Select(x => x > data.nextCost.Value)
                 .Subscribe(x => { upgradeButton.interactable = x; })
                 .AddTo(_disposables);
+            data.currentValue.Subscribe(x => { currentValue.text = x.ToString(); })
+                .AddTo(_disposables);
+
 
             upgradeButton.OnClickAsObservable()
                 .Subscribe(x => { onButtonClick?.Invoke(); })
@@ -58,7 +63,9 @@ namespace UI.Gameplay.UpgradesPanels
             Action onButtonClick)
         {
             label.text = labelText;
-            data = data;
+            data.nextValue
+                .Subscribe(x => { nextValue.text = x.ToString(CultureInfo.InvariantCulture); })
+                .AddTo(_disposables);
 
             data.currentLevel.Subscribe(
                 x => { currentLevel.text = x.ToString(); }).AddTo(_disposables);

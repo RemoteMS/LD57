@@ -26,9 +26,9 @@ namespace Services.Gameplay.Upgrading
 
         public IReadOnlyReactiveProperty<int> currentLevel => _currentLevel;
         public IReadOnlyReactiveProperty<T> currentValue { get; }
+        public IReadOnlyReactiveProperty<T> nextValue { get; } // Добавлено nextValue
         public IReadOnlyReactiveProperty<int> currentCost { get; }
         public IReadOnlyReactiveProperty<int> nextCost { get; }
-
         public int MaxLevel => _maxLevel;
         public IReadOnlyReactiveProperty<bool> isMaxLevel { get; }
 
@@ -42,7 +42,8 @@ namespace Services.Gameplay.Upgrading
             
             _currentLevel = new ReactiveProperty<int>(1);
             currentValue = _currentLevel.Select(level => _levels[level - 1].Value).ToReactiveProperty();
-            currentCost = _currentLevel.Select(level => _levels[level  - 1].Cost).ToReactiveProperty();
+            nextValue = _currentLevel.Select(level => level < _maxLevel ? _levels[level].Value : default(T)).ToReactiveProperty(); // Реализация nextValue
+            currentCost = _currentLevel.Select(level => _levels[level - 1].Cost).ToReactiveProperty();
             nextCost = _currentLevel.Select(level => level < _maxLevel ? _levels[level].Cost : -1).ToReactiveProperty();
             isMaxLevel = _currentLevel.Select(level => level >= _maxLevel).ToReactiveProperty();
         }
