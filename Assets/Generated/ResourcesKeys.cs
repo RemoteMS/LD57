@@ -12,16 +12,18 @@ public static class ResourcesConstants
     {
         public const string AudioManager = "Audio/AudioManager";
         public const string ScreemSource = "Audio/ScreemSource";
-    
+
         public static class Mixers
         {
             public const string Main = "Audio/Mixers/Main";
         }
     }
+
     public static class Camera
     {
         public const string CameraContainer = "Camera/CameraContainer";
     }
+
     public static class Fonts__And__Materials
     {
         public const string LiberationSans_SDF = "Fonts & Materials/LiberationSans SDF";
@@ -29,6 +31,7 @@ public static class ResourcesConstants
         public const string LiberationSans_SDF___Fallback = "Fonts & Materials/LiberationSans SDF - Fallback";
         public const string LiberationSans_SDF___Outline = "Fonts & Materials/LiberationSans SDF - Outline";
     }
+
     public static class Gameplay
     {
         public static class World
@@ -38,10 +41,12 @@ public static class ResourcesConstants
             public const string MonsterContainer = "Gameplay/World/MonsterContainer";
         }
     }
+
     public static class Sprite_Assets
     {
         public const string EmojiOne = "Sprite Assets/EmojiOne";
     }
+
     public static class Style_Sheets
     {
         public const string Default_Style_Sheet = "Style Sheets/Default Style Sheet";

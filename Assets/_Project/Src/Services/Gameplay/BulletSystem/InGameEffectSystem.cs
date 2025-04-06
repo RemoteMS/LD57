@@ -51,14 +51,18 @@ namespace Services.Gameplay.BulletSystem
         {
             Debug.LogWarning($"impactEffectPrefab - {impactPosition}");
             var impactEffectPrefab = _resourceManager.GetObjectCopyFast(impactEffectPrefabAdress);
-            var impactEffect = Object.Instantiate(
-                impactEffectPrefab,
-                impactPosition,
-                impactIdentity
-            );
-            impactEffect.transform.up = up;
+            // var impactEffect = Object.Instantiate(
+            //     impactEffectPrefab,
+            //     impactPosition,
+            //     impactIdentity
+            // );
+            // impactEffect.transform.up = up;
+            
+            impactEffectPrefab.transform.position = impactPosition;
+            impactEffectPrefab.transform.rotation = impactIdentity;
+            impactEffectPrefab.transform.up = up;
 
-            Object.Destroy(impactEffect, timeToDestroy);
+            Object.Destroy(impactEffectPrefab, timeToDestroy);
         }
 
         public void EnemyExitLevel(IEffectable effectable)
