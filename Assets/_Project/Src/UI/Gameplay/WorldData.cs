@@ -19,6 +19,7 @@ namespace UI.Gameplay
         [SerializeField] private TMP_Text gameTimer;
         [SerializeField] private TMP_Text timeToWaveEnd;
         [SerializeField] private TMP_Text enemiesCount;
+        [SerializeField] private TMP_Text currentWaveIndex;
 
         [SerializeField] private GameObject gameOverPanel;
         [SerializeField] private Button gameOverButton;
@@ -43,15 +44,15 @@ namespace UI.Gameplay
                 .Subscribe(x => { remainingEnemies.text = x.ToString(); })
                 .AddTo(_disposables);
 
-            _gameProcessManager.waveTimeRemaining
+            _gameProcessManager.stateTimeRemaining
                 .Subscribe(x => { waveTimeRemaining.text = x.ToString(CultureInfo.InvariantCulture); })
                 .AddTo(_disposables);
 
-            _gameProcessManager.gameTimer
+            _gameProcessManager.stateTimeElapsed
                 .Subscribe(x => { gameTimer.text = x.ToString(CultureInfo.InvariantCulture); })
                 .AddTo(_disposables);
 
-            _gameProcessManager.timeToWaveEnd
+            _gameProcessManager.stateTimeRemaining
                 .Subscribe(x =>
                 {
                     timeToWaveEnd.text = x > 0
@@ -64,6 +65,9 @@ namespace UI.Gameplay
             _gameProcessManager.hasLost
                 .Where(x => x)
                 .Subscribe(x => { ShowGameOverWindow(); })
+                .AddTo(_disposables);
+
+            _gameProcessManager.currentWaveIndex.Subscribe(x => { currentWaveIndex.text = x.ToString(); })
                 .AddTo(_disposables);
 
             gameplayStorage.enemiesCount.Subscribe(x => { enemiesCount.text = x.ToString(); }).AddTo(_disposables);

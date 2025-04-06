@@ -6,6 +6,8 @@ namespace Services.Gameplay.GameProcessManagement
     public class GameStarter : MonoBehaviour
     {
         public KeyCode keyRunState = KeyCode.L;
+        public KeyCode nextWave = KeyCode.KeypadEnter;
+        public KeyCode nextCalm = KeyCode.K;
         private GameProcessManager _manager;
 
         [Inject]
@@ -22,6 +24,20 @@ namespace Services.Gameplay.GameProcessManagement
             {
                 i++;
                 _manager.RunGameAsync();
+                Debug.Log("Game started");
+            }
+
+            if (Input.GetKey(nextCalm))
+            {
+                _manager.ForceStartCalm();
+                Debug.Log("ForceStartCalm");
+            }
+
+
+            if (Input.GetKey(nextWave))
+            {
+                _manager.ForceStartCalm();
+                Debug.Log("ForceStartCalm");
             }
         }
     }

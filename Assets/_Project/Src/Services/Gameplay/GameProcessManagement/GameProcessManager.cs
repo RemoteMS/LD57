@@ -5,21 +5,25 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+// todo: FIX TIME!
+
 namespace Services.Gameplay.GameProcessManagement
 {
     public enum GameState
     {
         Calm,
+        WaveApproaching,
         WaveActive,
-        WaveCooldown
+        WaitingForEnemies,
+        Lost
     }
 
     [Serializable]
     public class WaveSettings
     {
-        public float WaveDuration;
-        public float CalmDuration;
-        public int EnemiesPerWave;
+        public float waveDuration;
+        public int enemiesPerWave;
     }
 
     public class GameProcessManager : IDisposable
@@ -29,22 +33,27 @@ namespace Services.Gameplay.GameProcessManagement
         private readonly List<WaveSettings> _waveSettings;
 
         private readonly ReactiveProperty<GameState> _currentState;
-        private readonly ReactiveProperty<float> _waveTimeRemaining;
         private readonly ReactiveProperty<int> _remainingEnemies;
-        private readonly ReactiveProperty<float> _gameTimer;
-        private readonly ReactiveProperty<float> _timeToWaveEnd;
-
+        private readonly ReactiveProperty<bool> _isRunning;
         private readonly ReactiveProperty<bool> _hasLost;
 
-        public IReadOnlyReactiveProperty<GameState> currentState => _currentState;
-        public IReadOnlyReactiveProperty<float> waveTimeRemaining => _waveTimeRemaining;
-        public IReadOnlyReactiveProperty<int> remainingEnemies => _remainingEnemies;
-        public IReadOnlyReactiveProperty<float> gameTimer => _gameTimer;
-        public IReadOnlyReactiveProperty<float> timeToWaveEnd => _timeToWaveEnd;
-        public IReadOnlyReactiveProperty<bool> hasLost => _hasLost;
+        // Таймеры для каждого состояния
+        private readonly ReactiveProperty<float> _stateTimeRemaining; // Сколько осталось до конца текущего состояния
+        private readonly ReactiveProperty<float> _stateTimeElapsed;   // Сколько времени прошло в текущем состоянии
 
-        private int _currentWaveIndex;
-        private bool _isRunning;
+        public IReadOnlyReactiveProperty<int> currentWaveIndex => _currentWaveIndex;
+        private readonly ReactiveProperty<int> _currentWaveIndex;
+
+        private IDisposable _currentTimerSubscription; // Храним текущую подписку на таймер
+
+        public IReadOnlyReactiveProperty<GameState> currentState => _currentState;
+        public IReadOnlyReactiveProperty<int> remainingEnemies => _remainingEnemies;
+        public IReadOnlyReactiveProperty<bool> isRunning => _isRunning;
+        public IReadOnlyReactiveProperty<bool> hasLost => _hasLost;
+        public IReadOnlyReactiveProperty<float> stateTimeRemaining => _stateTimeRemaining;
+        public IReadOnlyReactiveProperty<float> stateTimeElapsed => _stateTimeElapsed;
+
+        private const float WaveApproachingDuration = 5f; // Длительность "волна приближается" в секундах
 
         public GameProcessManager(EconomicSystem economicSystem)
         {
@@ -52,23 +61,22 @@ namespace Services.Gameplay.GameProcessManagement
             _waveSettings = CreateDefaultWaveSettings();
 
             _currentState = new ReactiveProperty<GameState>(GameState.Calm).AddTo(_disposables);
-            _waveTimeRemaining = new ReactiveProperty<float>(0f).AddTo(_disposables);
             _remainingEnemies = new ReactiveProperty<int>(0).AddTo(_disposables);
-            _gameTimer = new ReactiveProperty<float>(0f).AddTo(_disposables);
-            _timeToWaveEnd = new ReactiveProperty<float>(0f).AddTo(_disposables);
+            _isRunning = new ReactiveProperty<bool>(false).AddTo(_disposables);
             _hasLost = new ReactiveProperty<bool>(false).AddTo(_disposables);
+            _stateTimeRemaining = new ReactiveProperty<float>(0f).AddTo(_disposables);
+            _stateTimeElapsed = new ReactiveProperty<float>(0f).AddTo(_disposables);
+
+            _currentWaveIndex = new ReactiveProperty<int>(0).AddTo(_disposables);
 
             SetupSubscriptions();
         }
 
         public async UniTask RunGameAsync()
         {
-            if (_isRunning) return;
-            _isRunning = true;
-            _currentWaveIndex = 0;
-            _gameTimer.Value = 0f; // Сброс таймера при старте
-
-            StartGameTimer(); // Запуск общего таймера
+            if (_isRunning.Value) return;
+            _isRunning.Value = true;
+            _currentWaveIndex.Value = 0;
 
             try
             {
@@ -79,13 +87,14 @@ namespace Services.Gameplay.GameProcessManagement
             }
             finally
             {
-                _isRunning = false;
+                _isRunning.Value = false;
             }
         }
 
         public void StopGame()
         {
-            _isRunning = false;
+            _isRunning.Value = false;
+            StopTimer();
         }
 
         public void RegisterEnemyDefeat()
@@ -98,7 +107,8 @@ namespace Services.Gameplay.GameProcessManagement
 
         public void Dispose()
         {
-            _isRunning = false;
+            _isRunning.Value = false;
+            StopTimer();
             _disposables?.Dispose();
         }
 
@@ -109,74 +119,118 @@ namespace Services.Gameplay.GameProcessManagement
                 case GameState.Calm:
                     await ProcessCalmState();
                     break;
-                case GameState.WaveActive:
-                    await ProcessWaveState();
+                case GameState.WaveApproaching:
+                    await ProcessWaveApproachingState();
                     break;
-                case GameState.WaveCooldown:
-                    await ProcessCooldownState();
+                case GameState.WaveActive:
+                    await ProcessWaveActiveState();
+                    break;
+                case GameState.WaitingForEnemies:
+                    await ProcessWaitingForEnemiesState();
+                    break;
+                case GameState.Lost:
+                    await UniTask.CompletedTask;
                     break;
             }
         }
 
         private async UniTask ProcessCalmState()
         {
-            ResetWaveState();
-            if (IsLastWaveCompleted())
-            {
-                _isRunning = false;
-                return;
-            }
-
-            await UniTask.Delay(TimeSpan.FromSeconds(_waveSettings[_currentWaveIndex].CalmDuration));
-            if (_isRunning) BeginWave();
+            ResetStateTimers();
+            _currentWaveIndex.Value += 1;
+            await UniTask.WaitWhile(() => _currentState.Value == GameState.Calm && _isRunning.Value);
         }
 
-        private async UniTask ProcessWaveState()
+        private async UniTask ProcessWaveApproachingState()
         {
-            await UniTask.WaitUntil(() => _waveTimeRemaining.Value <= 0 || !_isRunning);
-            if (_isRunning) TransitionToCooldown();
+            StartStateTimer(WaveApproachingDuration);
+            await UniTask.WaitUntil(() => _stateTimeRemaining.Value <= 0 || !_isRunning.Value);
+            if (_isRunning.Value) ForceStartWaveActive();
         }
 
-        private async UniTask ProcessCooldownState()
+        private async UniTask ProcessWaveActiveState()
         {
-            await UniTask.WaitUntil(() => _remainingEnemies.Value <= 0 || !_isRunning);
-            if (_isRunning) PrepareNextWave();
+            await UniTask.WaitUntil(() => _stateTimeRemaining.Value <= 0 || !_isRunning.Value);
+            if (_isRunning.Value) ForceStartWaitingForEnemies();
         }
 
-        private void BeginWave()
+        private async UniTask ProcessWaitingForEnemiesState()
         {
-            if (IsLastWaveCompleted()) return;
+            ResetStateTimers();
+            await UniTask.WaitUntil(() => _remainingEnemies.Value <= 0 || !_isRunning.Value);
+            if (_isRunning.Value) ForceStartCalm();
+        }
 
-            WaveSettings settings = _waveSettings[_currentWaveIndex];
+        // Методы принудительного переключения состояний
+        public void ForceStartCalm()
+        {
+            if (!_isRunning.Value) return;
+            _currentState.Value = GameState.Calm;
+            ResetStateTimers();
+            _remainingEnemies.Value = 0;
+        }
+
+        public void ForceStartWaveApproaching()
+        {
+            if (!_isRunning.Value || IsLastWaveCompleted()) return;
+            _currentState.Value = GameState.WaveApproaching;
+            StartStateTimer(WaveApproachingDuration);
+        }
+
+        public void ForceStartWaveActive()
+        {
+            if (!_isRunning.Value || IsLastWaveCompleted()) return;
+            WaveSettings settings = _waveSettings[_currentWaveIndex.Value];
             _currentState.Value = GameState.WaveActive;
-            _waveTimeRemaining.Value = settings.WaveDuration;
-            _remainingEnemies.Value = settings.EnemiesPerWave;
-            _timeToWaveEnd.Value = settings.WaveDuration;
-
-            StartWaveTimer();
+            _remainingEnemies.Value = settings.enemiesPerWave;
+            StartStateTimer(settings.waveDuration);
         }
 
-        private void StartWaveTimer()
+        public void ForceStartWaitingForEnemies()
         {
-            Observable.Timer(TimeSpan.FromSeconds(0.1f), TimeSpan.FromSeconds(0.1f))
-                .TakeWhile(_ => _waveTimeRemaining.Value > 0 && _isRunning)
+            if (!_isRunning.Value) return;
+            _currentState.Value = GameState.WaitingForEnemies;
+            ResetStateTimers();
+        }
+
+        public void ForceStartLost()
+        {
+            _currentState.Value = GameState.Lost;
+            _isRunning.Value = false;
+            _hasLost.Value = true;
+            ResetStateTimers();
+        }
+
+        private void StartStateTimer(float duration)
+        {
+            StopTimer();
+
+            _stateTimeRemaining.Value = duration;
+            _stateTimeElapsed.Value = 0f;
+
+            Debug.Log($"Starting timer for state {_currentState.Value} with duration {duration}s");
+
+            _currentTimerSubscription = Observable.Timer(TimeSpan.FromSeconds(0.1f), TimeSpan.FromSeconds(0.1f))
+                .TakeWhile(_ => _stateTimeRemaining.Value > 0 && _isRunning.Value)
                 .Subscribe(_ =>
                 {
-                    _waveTimeRemaining.Value -= 0.1f;
-                    if (_currentState.Value == GameState.WaveActive)
-                    {
-                        _timeToWaveEnd.Value = _waveTimeRemaining.Value; // Синхронизируем
-                    }
-                })
+                    _stateTimeRemaining.Value -= 0.1f;
+                    _stateTimeElapsed.Value += 0.1f;
+                }, () => Debug.Log($"Timer for state {_currentState.Value} completed"))
                 .AddTo(_disposables);
         }
 
-        private void StartGameTimer()
+        private void StopTimer()
         {
-            Observable.Timer(TimeSpan.FromSeconds(0.1f), TimeSpan.FromSeconds(0.1f))
-                .TakeWhile(_ => _isRunning)
-                .Subscribe(_ => _gameTimer.Value += 0.1f)
-                .AddTo(_disposables);
+            _currentTimerSubscription?.Dispose();
+            _currentTimerSubscription = null;
+        }
+
+        private void ResetStateTimers()
+        {
+            StopTimer();
+            _stateTimeRemaining.Value = 0f;
+            _stateTimeElapsed.Value = 0f;
         }
 
         private void SetupSubscriptions()
@@ -190,36 +244,38 @@ namespace Services.Gameplay.GameProcessManagement
         private void HandleGameOver()
         {
             Debug.LogError($"Game Over - {_economicSystem.globalHealthCount.Value}");
-
-            _currentState.Value = GameState.Calm;
-            _currentWaveIndex = 0;
-            _isRunning = false;
-
-            _hasLost.Value = true;
+            ForceStartLost();
         }
 
-        private void ResetWaveState()
-        {
-            _waveTimeRemaining.Value = 0;
-            _remainingEnemies.Value = 0;
-            _timeToWaveEnd.Value = 0; // Сбрасываем время до конца волны
-        }
+        private bool IsGameActive() => _economicSystem.globalHealthCount.Value > 0 && _isRunning.Value &&
+                                       _currentState.Value                     != GameState.Lost;
 
-        private void TransitionToCooldown() => _currentState.Value = GameState.WaveCooldown;
-
-        private void PrepareNextWave()
-        {
-            _currentWaveIndex++;
-            _currentState.Value = GameState.Calm;
-        }
-
-        private bool IsGameActive() => _economicSystem.globalHealthCount.Value > 0 && _isRunning;
-        private bool IsLastWaveCompleted() => _currentWaveIndex >= _waveSettings.Count;
+        private bool IsLastWaveCompleted() => _currentWaveIndex.Value >= _waveSettings.Count;
 
         private static List<WaveSettings> CreateDefaultWaveSettings() => new List<WaveSettings>
         {
-            new WaveSettings { WaveDuration = 30f, CalmDuration = 10f, EnemiesPerWave = 5 },
-            new WaveSettings { WaveDuration = 40f, CalmDuration = 15f, EnemiesPerWave = 10 }
+            new WaveSettings { waveDuration = 5f, enemiesPerWave = 5 },
+            new WaveSettings { waveDuration = 10f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 20f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 30f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 40f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 50f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 60f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 70f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 80f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 90f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 100f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 110f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 120f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 130f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 140f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 150f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 160f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 170f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 180f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 190f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 200f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 210f, enemiesPerWave = 10 },
         };
     }
 }
