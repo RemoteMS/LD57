@@ -5,9 +5,6 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
-
-// todo: FIX TIME!
-
 namespace Services.Gameplay.GameProcessManagement
 {
     public enum GameState

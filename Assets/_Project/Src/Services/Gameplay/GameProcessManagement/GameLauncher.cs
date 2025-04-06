@@ -29,7 +29,7 @@ namespace Services.Gameplay.GameProcessManagement
             _gameProcessManager.remainingEnemies.Subscribe(count => Debug.Log($"Enemies Remaining: {count}"))
                 .AddTo(this);
             _gameProcessManager.hasLost.Subscribe(lost => Debug.Log($"Game Lost: {lost}")).AddTo(this);
-            
+
 
             StartGame().Forget();
         }
@@ -78,6 +78,13 @@ namespace Services.Gameplay.GameProcessManagement
                 Debug.Log("V pressed - Dealing damage to simulate game over");
                 _economicSystem.DamageToPlayer(new TestDamager(1000)); // Наносим урон для проверки проигрыша
             }
+
+            if (Input.GetKeyDown(KeyCode.B))
+            {
+                Debug.Log("B pressed - Dealing damage to simulate game over");
+                _economicSystem.GetPriceForEnemy(new TestPricer(1000));
+                ;
+            }
         }
 
         private void OnDestroy()
@@ -86,6 +93,19 @@ namespace Services.Gameplay.GameProcessManagement
         }
     }
 
+
+    public class TestPricer : IEffectable
+    {
+        public TestPricer(int price)
+        {
+            Price = price;
+        }
+
+        public int DamageToPlayer { get; }
+        public int Price { get; }
+        public Health Health { get; }
+        public GameObject GameObject { get; }
+    }
 
     public class TestDamager : IEffectable
     {

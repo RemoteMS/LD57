@@ -13,7 +13,6 @@ namespace Services.Storages.Gameplay
         public IReadOnlyReactiveCollection<IEffectable> enemies => _enemies;
         private readonly ReactiveCollection<IEffectable> _enemies;
 
-        
         public readonly GunData gunData;
 
         private readonly CompositeDisposable _disposables = new();

@@ -1,6 +1,7 @@
 using System;
 using Services.Gameplay.BulletSystem;
 using UniRx;
+using UnityEngine;
 
 namespace Services.Gameplay.Economic
 {
@@ -23,6 +24,7 @@ namespace Services.Gameplay.Economic
         public void GetPriceForEnemy(IEffectable effectable)
         {
             _coinsCount.Value += effectable.Price;
+            Debug.LogWarning($"new coints count is {_coinsCount.Value}");
         }
 
         public void DamageToPlayer(IEffectable effectable)
