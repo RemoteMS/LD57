@@ -3,8 +3,8 @@ using Reflex.Core;
 using Services.Gameplay.BulletSystem;
 using Services.Gameplay.BulletSystem.Particles;
 using Services.Gameplay.Economic;
-using Services.Gameplay.Enemies;
 using Services.Gameplay.GameProcessManagement;
+using Services.Storages.Gameplay;
 
 namespace Core.DI.SceneContainerBuilders
 {
@@ -13,7 +13,7 @@ namespace Core.DI.SceneContainerBuilders
         public override void Configure(ContainerBuilder builder)
         {
             builder.SetName($"GameplayScene");
-
+            
             builder.AddSingleton(typeof(ProjectileSettings), typeof(ProjectileSettings));
 
             builder.AddSingleton(typeof(RaycastBatchProcessor), typeof(RaycastBatchProcessor), typeof(IDisposable));
@@ -21,6 +21,7 @@ namespace Core.DI.SceneContainerBuilders
             builder.AddSingleton(typeof(BulletManager),         typeof(BulletManager),         typeof(IDisposable));
             builder.AddSingleton(typeof(EconomicSystem),        typeof(EconomicSystem),        typeof(IDisposable));
             builder.AddSingleton(typeof(GameProcessManager),    typeof(GameProcessManager),    typeof(IDisposable));
+            builder.AddSingleton(typeof(GameplayStorage),       typeof(GameplayStorage),       typeof(IDisposable));
 
             builder.OnContainerBuilt += OnBuild;
         }

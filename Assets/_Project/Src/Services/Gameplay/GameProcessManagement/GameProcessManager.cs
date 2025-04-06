@@ -3,6 +3,7 @@ using Services.Gameplay.Economic;
 using UniRx;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Services.Gameplay.GameProcessManagement
 {
@@ -33,11 +34,14 @@ namespace Services.Gameplay.GameProcessManagement
         private readonly ReactiveProperty<float> _gameTimer;
         private readonly ReactiveProperty<float> _timeToWaveEnd;
 
+        private readonly ReactiveProperty<bool> _hasLost;
+
         public IReadOnlyReactiveProperty<GameState> currentState => _currentState;
         public IReadOnlyReactiveProperty<float> waveTimeRemaining => _waveTimeRemaining;
         public IReadOnlyReactiveProperty<int> remainingEnemies => _remainingEnemies;
         public IReadOnlyReactiveProperty<float> gameTimer => _gameTimer;
         public IReadOnlyReactiveProperty<float> timeToWaveEnd => _timeToWaveEnd;
+        public IReadOnlyReactiveProperty<bool> hasLost => _hasLost;
 
         private int _currentWaveIndex;
         private bool _isRunning;
@@ -47,11 +51,12 @@ namespace Services.Gameplay.GameProcessManagement
             _economicSystem = economicSystem ?? throw new ArgumentNullException(nameof(economicSystem));
             _waveSettings = CreateDefaultWaveSettings();
 
-            _currentState = new ReactiveProperty<GameState>(GameState.Calm);
-            _waveTimeRemaining = new ReactiveProperty<float>(0f);
-            _remainingEnemies = new ReactiveProperty<int>(0);
-            _gameTimer = new ReactiveProperty<float>(0f);
-            _timeToWaveEnd = new ReactiveProperty<float>(0f);
+            _currentState = new ReactiveProperty<GameState>(GameState.Calm).AddTo(_disposables);
+            _waveTimeRemaining = new ReactiveProperty<float>(0f).AddTo(_disposables);
+            _remainingEnemies = new ReactiveProperty<int>(0).AddTo(_disposables);
+            _gameTimer = new ReactiveProperty<float>(0f).AddTo(_disposables);
+            _timeToWaveEnd = new ReactiveProperty<float>(0f).AddTo(_disposables);
+            _hasLost = new ReactiveProperty<bool>(false).AddTo(_disposables);
 
             SetupSubscriptions();
         }
@@ -184,10 +189,13 @@ namespace Services.Gameplay.GameProcessManagement
 
         private void HandleGameOver()
         {
+            Debug.LogError($"Game Over - {_economicSystem.globalHealthCount.Value}");
+
             _currentState.Value = GameState.Calm;
             _currentWaveIndex = 0;
             _isRunning = false;
-            throw new NotImplementedException("Game Over logic not implemented");
+
+            _hasLost.Value = true;
         }
 
         private void ResetWaveState()

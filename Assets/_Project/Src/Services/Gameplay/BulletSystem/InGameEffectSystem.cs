@@ -1,6 +1,8 @@
 using System;
 using Services.Gameplay.Economic;
+using Services.Gameplay.Enemies;
 using Services.Global.ResourceManagement;
+using Services.Storages.Gameplay;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -10,11 +12,13 @@ namespace Services.Gameplay.BulletSystem
     {
         private readonly EconomicSystem _economicSystem;
         private readonly IDataManager _resourceManager;
+        private readonly GameplayStorage _gameplayStorage;
 
-        public InGameEffectSystem(EconomicSystem economicSystem, IDataManager resourceManager)
+        public InGameEffectSystem(EconomicSystem economicSystem, IDataManager resourceManager, GameplayStorage gameplayStorage)
         {
             _economicSystem = economicSystem;
             _resourceManager = resourceManager;
+            _gameplayStorage = gameplayStorage;
         }
 
         public void TakeEffect(IEffectDealer effectDealer, IEffectable target)
@@ -32,8 +36,7 @@ namespace Services.Gameplay.BulletSystem
                     _economicSystem.GetPriceForEnemy(target);
                     Debug.LogWarning($"should be dead - {target} {target.GameObject.name}");
 
-                    // kill enemy                    
-                    Object.Destroy(target.GameObject);
+                    _gameplayStorage.KillEnemy(target);
                 }
             }
 

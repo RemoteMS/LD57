@@ -1,4 +1,3 @@
-using System;
 using Reflex.Attributes;
 using Services.Global.ScenesManagement;
 using UniRx;
