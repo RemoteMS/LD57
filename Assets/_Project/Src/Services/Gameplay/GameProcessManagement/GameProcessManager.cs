@@ -182,6 +182,8 @@ namespace Services.Gameplay.GameProcessManagement
 
         public WaveSettings GetCurrent()
         {
+            Debug.LogWarning(
+                $"current - {_currentWaveIndex.Value}, {_waveSettings[_currentWaveIndex.Value].waveDuration}, {_waveSettings[_currentWaveIndex.Value].enemiesPerWave}");
             return _waveSettings[_currentWaveIndex.Value];
         }
 
@@ -263,23 +265,25 @@ namespace Services.Gameplay.GameProcessManagement
         private static List<WaveSettings> CreateDefaultWaveSettings() => new List<WaveSettings>
         {
             new WaveSettings { waveDuration = 5f, enemiesPerWave = 5 },
+            new WaveSettings { waveDuration = 5f, enemiesPerWave = 5 },
+            new WaveSettings { waveDuration = 5f, enemiesPerWave = 10 },
             new WaveSettings { waveDuration = 10f, enemiesPerWave = 15 },
             new WaveSettings { waveDuration = 20f, enemiesPerWave = 20 },
-            new WaveSettings { waveDuration = 30f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 30f, enemiesPerWave = 25 },
             new WaveSettings { waveDuration = 40f, enemiesPerWave = 30 },
-            new WaveSettings { waveDuration = 50f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 50f, enemiesPerWave = 35 },
             new WaveSettings { waveDuration = 60f, enemiesPerWave = 40 },
-            new WaveSettings { waveDuration = 70f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 70f, enemiesPerWave = 45 },
             new WaveSettings { waveDuration = 80f, enemiesPerWave = 50 },
-            new WaveSettings { waveDuration = 90f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 90f, enemiesPerWave = 55 },
             new WaveSettings { waveDuration = 100f, enemiesPerWave = 60 },
-            new WaveSettings { waveDuration = 110f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 110f, enemiesPerWave = 65 },
             new WaveSettings { waveDuration = 120f, enemiesPerWave = 70 },
-            new WaveSettings { waveDuration = 130f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 130f, enemiesPerWave = 75 },
             new WaveSettings { waveDuration = 140f, enemiesPerWave = 80 },
-            new WaveSettings { waveDuration = 150f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 150f, enemiesPerWave = 85 },
             new WaveSettings { waveDuration = 160f, enemiesPerWave = 90 },
-            new WaveSettings { waveDuration = 170f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 170f, enemiesPerWave = 95 },
             new WaveSettings { waveDuration = 180f, enemiesPerWave = 100 },
             new WaveSettings { waveDuration = 190f, enemiesPerWave = 210 },
             new WaveSettings { waveDuration = 200f, enemiesPerWave = 220 },

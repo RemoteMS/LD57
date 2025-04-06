@@ -4,6 +4,7 @@ using Services.Gameplay.GameProcessManagement;
 using Services.Storages.Gameplay;
 using UniRx;
 using UnityEngine;
+using Cysharp.Threading.Tasks; // Добавляем пространство имен для UniTask
 
 namespace Services.Gameplay.Enemies
 {
@@ -11,17 +12,14 @@ namespace Services.Gameplay.Enemies
     {
         [SerializeField] private AudioSource AudioSourceAwake;
         [SerializeField] private AudioClip AudioAwake;
-        
+
         [SerializeField] private GameObject enemyPrefab;
-        [SerializeField] private float spawnInterval = 2f;
         [SerializeField] private Transform[] _spawnPoints;
 
-        private float _timer;
-        private bool _canSpawn;
         private GameProcessManager _manager;
         private readonly CompositeDisposable _disposables = new();
-
         private GameplayStorage _gameplayStorage;
+        private UniTask? _spawnTask; // Для хранения текущей задачи спавна
 
         [Inject]
         public void Inject(GameProcessManager manager, GameplayStorage gameplayStorage)
@@ -29,36 +27,51 @@ namespace Services.Gameplay.Enemies
             _manager = manager;
             _gameplayStorage = gameplayStorage;
 
+            // Подписка на начало WaveActive для запуска спавна
             _manager.currentState
-                .Subscribe(state => { _canSpawn = state == GameState.WaveActive; })
+                .Where(state => state == GameState.WaveActive)
+                .Subscribe(_ => StartSpawningEnemies())
+                .AddTo(_disposables);
+
+            // Отключаем спавн, если враги закончились или волна прервана
+            _manager.currentState
+                .Where(state => state != GameState.WaveActive)
+                .Subscribe(_ => StopSpawning())
                 .AddTo(_disposables);
 
             _manager.remainingEnemies
                 .Where(count => count <= 0 && _manager.currentState.Value == GameState.WaveActive)
-                .Subscribe(_ => _canSpawn = false)
+                .Subscribe(_ => StopSpawning())
                 .AddTo(_disposables);
         }
 
-        private void Start()
+        private void StartSpawningEnemies()
         {
-            _timer = spawnInterval;
-            _canSpawn = false;
-        }
+            var currentSettings = _manager.GetCurrent();
 
-        private void Update()
-        {
-            if (!_canSpawn) return;
 
-            _timer -= Time.deltaTime;
-
-            if (_timer <= 0)
+            if (currentSettings == null)
             {
-                SpawnEnemy();
-                _timer = spawnInterval;
+                Debug.LogWarning("No current wave settings available!");
+                return;
             }
+
+            var enemiesToSpawn = currentSettings.enemiesPerWave;
+            var waveDuration = currentSettings.waveDuration;
+
+            if (enemiesToSpawn <= 0 || waveDuration <= 0)
+            {
+                Debug.LogWarning("Invalid wave settings: enemies or duration is zero or negative.");
+                return;
+            }
+
+            StopSpawning();
+
+
+            _spawnTask = SpawnEnemiesOverTime(enemiesToSpawn, waveDuration);
         }
 
-        private void SpawnEnemy()
+        private async UniTask SpawnEnemiesOverTime(int enemiesToSpawn, float duration)
         {
             if (_spawnPoints.Length == 0)
             {
@@ -66,23 +79,51 @@ namespace Services.Gameplay.Enemies
                 return;
             }
 
+            // Рассчитываем интервал между спавнами
+            var spawnInterval = duration / enemiesToSpawn;
+
+            for (var i = 0; i < enemiesToSpawn; i++)
+            {
+                // Проверяем, активна ли еще волна и игра
+                if (_manager.currentState.Value != GameState.WaveActive || !_manager.isRunning.Value)
+                {
+                    break;
+                }
+
+                SpawnSingleEnemy();
+
+                // Ждем интервал перед следующим спавном
+                await UniTask.Delay(TimeSpan.FromSeconds(spawnInterval),
+                    cancellationToken: this.GetCancellationTokenOnDestroy());
+            }
+
+            Debug.Log($"Finished spawning {enemiesToSpawn} enemies for wave {_manager.currentWaveIndex.Value}");
+        }
+
+        private void SpawnSingleEnemy()
+        {
             var spawnPoint = _spawnPoints[UnityEngine.Random.Range(0, _spawnPoints.Length)];
 
-            // enemy 
+            // Спавн врага
             var instantiate = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
             var component = instantiate.GetComponent<Enemy>();
 
             _gameplayStorage.AddEnemy(component);
 
-
+            // Воспроизведение звука
             AudioSourceAwake.gameObject.transform.position = spawnPoint.position;
             AudioSourceAwake.PlayOneShot(AudioAwake);
-            // Instantiate sound effect
+        }
+
+        private void StopSpawning()
+        {
+            _spawnTask = null; // UniTask автоматически остановится благодаря cancellationToken
         }
 
         public void Dispose()
         {
             _disposables?.Dispose();
+            StopSpawning();
         }
 
         private void OnDestroy()
