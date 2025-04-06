@@ -4,6 +4,9 @@ namespace Services.Gameplay.Controls
 {
     public class OrbitCamera : MonoBehaviour
     {
+        [SerializeField] private Transform horizontal;
+        [SerializeField] private Transform vertical;
+
         [SerializeField] private Transform gunContainer;
         [SerializeField] private Transform target;
         [SerializeField] private float horizontalRotationSpeed = 1f;
@@ -46,31 +49,32 @@ namespace Services.Gameplay.Controls
             if (!target || !gunContainer) return;
 
             // Horizontal
-            if (Input.GetKey(KeyCode.D))
+            if (Input.GetKey(KeyCode.A)) // По часовой стрелке
             {
                 _currentAngle -= horizontalRotationSpeed * Time.deltaTime * mult;
+                horizontal.Rotate(0f, -horizontalRotationSpeed * Time.deltaTime * mult * 10, 0f, Space.Self);
             }
 
-            if (Input.GetKey(KeyCode.A))
+            if (Input.GetKey(KeyCode.D)) // Против часовой стрелки
             {
                 _currentAngle += horizontalRotationSpeed * Time.deltaTime * mult;
+                horizontal.Rotate(0f, horizontalRotationSpeed * Time.deltaTime * mult * 10, 0f, Space.Self);
             }
 
             // Vertical
-            if (Input.GetKey(KeyCode.W))
+            if (Input.GetKey(KeyCode.W) && _gunRotationX > MIN_GUN_ANGLE) // Вверх
             {
                 _gunRotationX -= verticalRotationSpeed * Time.deltaTime * mult;
+                vertical.Rotate(0f, -verticalRotationSpeed * Time.deltaTime * mult * 10, 0f, Space.Self);
             }
 
-            if (Input.GetKey(KeyCode.S))
+            if (Input.GetKey(KeyCode.S) && _gunRotationX < MAX_GUN_ANGLE) // Вниз
             {
                 _gunRotationX += verticalRotationSpeed * Time.deltaTime * mult;
+                vertical.Rotate(0f, verticalRotationSpeed * Time.deltaTime * mult * 10, 0f, Space.Self);
             }
 
-
             _gunRotationX = Mathf.Clamp(_gunRotationX, MIN_GUN_ANGLE, MAX_GUN_ANGLE);
-
-
             gunContainer.localRotation = Quaternion.Euler(_gunRotationX, 0f, 0f);
 
             UpdateCameraPosition();
