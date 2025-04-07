@@ -13,6 +13,8 @@ namespace UI.Gameplay
 {
     public class WorldData : MonoBehaviour, IDisposable
     {
+        [SerializeField] private TMP_Text waveTimeRemaining_new;
+
         [SerializeField] private TMP_Text currentState;
         [SerializeField] private TMP_Text remainingEnemies;
         [SerializeField] private TMP_Text waveTimeRemaining;
@@ -21,6 +23,8 @@ namespace UI.Gameplay
         [SerializeField] private TMP_Text enemiesCount;
         [SerializeField] private TMP_Text currentWaveIndex;
 
+        [SerializeField] private GameObject killThem;
+        [SerializeField] private GameObject surviveForPanel;
         [SerializeField] private GameObject gameOverPanel;
         [SerializeField] private Button gameOverButton;
 
@@ -37,6 +41,16 @@ namespace UI.Gameplay
             _gameProcessManager = gameProcessManager;
 
             _gameProcessManager.currentState
+                .Select(x => x == GameState.WaveActive)
+                .Subscribe(x => { surviveForPanel.gameObject.SetActive(x); })
+                .AddTo(_disposables);
+
+            _gameProcessManager.currentState
+                .Select(x => x == GameState.WaitingForEnemies)
+                .Subscribe(x => { killThem.gameObject.SetActive(x); })
+                .AddTo(_disposables);
+
+            _gameProcessManager.currentState
                 .Subscribe(x => { currentState.text = x.ToString(); })
                 .AddTo(_disposables);
 
@@ -45,7 +59,11 @@ namespace UI.Gameplay
                 .AddTo(_disposables);
 
             _gameProcessManager.stateTimeRemaining
-                .Subscribe(x => { waveTimeRemaining.text = x.ToString(CultureInfo.InvariantCulture); })
+                .Subscribe(x =>
+                {
+                    waveTimeRemaining.text = x.ToString(CultureInfo.InvariantCulture);
+                    waveTimeRemaining_new.text = x.ToString(CultureInfo.InvariantCulture);
+                })
                 .AddTo(_disposables);
 
             _gameProcessManager.stateTimeElapsed

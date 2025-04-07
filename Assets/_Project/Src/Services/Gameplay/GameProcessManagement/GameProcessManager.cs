@@ -264,8 +264,8 @@ namespace Services.Gameplay.GameProcessManagement
 
         private static List<WaveSettings> CreateDefaultWaveSettings() => new List<WaveSettings>
         {
-            new WaveSettings { waveDuration = 5f, enemiesPerWave = 5 },
-            new WaveSettings { waveDuration = 5f, enemiesPerWave = 5 },
+            new WaveSettings { waveDuration = 5f, enemiesPerWave = 10 },
+            new WaveSettings { waveDuration = 5f, enemiesPerWave = 10 },
             new WaveSettings { waveDuration = 5f, enemiesPerWave = 10 },
             new WaveSettings { waveDuration = 10f, enemiesPerWave = 15 },
             new WaveSettings { waveDuration = 20f, enemiesPerWave = 20 },
