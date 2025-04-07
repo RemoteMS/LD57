@@ -22,7 +22,12 @@ namespace UI.Gameplay
 
             gunData.maxAmmo.Subscribe(x => { maxAmmo.text = x.ToString(); }).AddTo(_disposables);
             gunData.currentAmmo.Subscribe(x => { currentAmmo.text = x.ToString(); }).AddTo(_disposables);
-            gunData.isReloading.Subscribe(x => { isReloading.text = x.ToString(); }).AddTo(_disposables);
+            
+            gunData.isReloading.Subscribe(x =>
+            {
+                isReloading.gameObject.SetActive(x);
+                
+            }).AddTo(_disposables);
         }
 
 
