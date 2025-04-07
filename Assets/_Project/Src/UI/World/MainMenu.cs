@@ -11,6 +11,7 @@ namespace Src.UI.World
         private CompositeDisposable _disposables = new();
 
         public Button toGame;
+        public Button exit;
 
         private ISceneLoader _loader;
 
@@ -20,6 +21,17 @@ namespace Src.UI.World
             _loader = loader;
 
             toGame.OnClickAsObservable().Subscribe(x => { _loader.LoadGamePlay(); }).AddTo(_disposables);
+            exit.OnClickAsObservable().Subscribe(x =>
+            {
+#if UNITY_EDITOR
+                if (UnityEditor.EditorApplication.isPlaying)
+                {
+                    UnityEditor.EditorApplication.isPlaying = false;
+                }
+#else
+                Application.Quit();
+#endif
+            }).AddTo(_disposables);
         }
 
         private void OnDestroy()

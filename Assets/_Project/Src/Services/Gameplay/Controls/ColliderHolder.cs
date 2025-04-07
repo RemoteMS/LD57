@@ -7,7 +7,10 @@ namespace Services.Gameplay.Controls
         private void OnTriggerEnter(Collider other)
         {
             Debug.LogWarning($"Projectile triggered with {other.gameObject.name}");
-            Destroy(gameObject);
+
+            if (other)
+                if (other.gameObject)
+                    Destroy(gameObject);
         }
     }
 }

@@ -79,12 +79,10 @@ namespace Services.Gameplay.Enemies
                 return;
             }
 
-            // Рассчитываем интервал между спавнами
             var spawnInterval = duration / enemiesToSpawn;
 
             for (var i = 0; i < enemiesToSpawn; i++)
             {
-                // Проверяем, активна ли еще волна и игра
                 if (_manager.currentState.Value != GameState.WaveActive || !_manager.isRunning.Value)
                 {
                     break;
@@ -92,7 +90,6 @@ namespace Services.Gameplay.Enemies
 
                 SpawnSingleEnemy();
 
-                // Ждем интервал перед следующим спавном
                 await UniTask.Delay(TimeSpan.FromSeconds(spawnInterval),
                     cancellationToken: this.GetCancellationTokenOnDestroy());
             }
@@ -104,13 +101,11 @@ namespace Services.Gameplay.Enemies
         {
             var spawnPoint = _spawnPoints[UnityEngine.Random.Range(0, _spawnPoints.Length)];
 
-            // Спавн врага
             var instantiate = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
             var component = instantiate.GetComponent<Enemy>();
 
             _gameplayStorage.AddEnemy(component);
 
-            // Воспроизведение звука
             AudioSourceAwake.gameObject.transform.position = spawnPoint.position;
             AudioSourceAwake.PlayOneShot(AudioAwake);
         }

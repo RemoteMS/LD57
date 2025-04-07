@@ -63,6 +63,12 @@ namespace Services.Global.Audio
             _sources.Add(sourceName, source);
         }
 
+        public void UnInjectSource(SourceType sourceName)
+        {
+            if (_sources.ContainsKey(sourceName))
+                _sources.Remove(sourceName);
+        }
+
         public void StopPlaying()
         {
             _mixer.Value.SetFloat(AudioResources.MainMixer.Exp_VolumeBackground, -80);

@@ -1,12 +1,15 @@
 using Reflex.Attributes;
 using Services.Gameplay.Economic;
 using Services.Gameplay.Upgrading;
+using TMPro;
+using UniRx;
 using UnityEngine;
 
 namespace UI.Gameplay.UpgradesPanels
 {
     public class UpgradePanel : MonoBehaviour
     {
+        [SerializeField] TMP_Text coinsCountText;
         [SerializeField] private BaseUpgrade upgradeFireRate;
         [SerializeField] private BaseUpgrade reloadTime;
         [SerializeField] private BaseUpgrade maxAmmo;
@@ -18,6 +21,14 @@ namespace UI.Gameplay.UpgradesPanels
         {
             _system = system;
             _economicSystem = economicSystem;
+
+
+            _economicSystem.coinsCount
+                .Subscribe(x =>
+                {
+                    coinsCountText.text = x.ToString();
+                })
+                .AddTo(this);
         }
 
         private void Start()

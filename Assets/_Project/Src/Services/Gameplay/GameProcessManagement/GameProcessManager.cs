@@ -4,6 +4,7 @@ using UniRx;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Services.Global.Audio;
+using Services.Storages.Gameplay;
 using UnityEngine;
 
 namespace Services.Gameplay.GameProcessManagement
@@ -22,12 +23,19 @@ namespace Services.Gameplay.GameProcessManagement
     {
         public float waveDuration;
         public int enemiesPerWave;
+
+        public WaveSettings(float waveDuration, int enemiesPerWave)
+        {
+            this.waveDuration = waveDuration;
+            this.enemiesPerWave = enemiesPerWave;
+        }
     }
 
     public class GameProcessManager : IDisposable
     {
         private readonly EconomicSystem _economicSystem;
         private readonly IAudioService _audioService;
+        private readonly GameplayStorage _storage;
         private readonly CompositeDisposable _disposables = new();
         private readonly List<WaveSettings> _waveSettings;
 
@@ -54,10 +62,11 @@ namespace Services.Gameplay.GameProcessManagement
 
         private const float WaveApproachingDuration = 5f; // Длительность "волна приближается" в секундах
 
-        public GameProcessManager(EconomicSystem economicSystem, IAudioService audioService)
+        public GameProcessManager(EconomicSystem economicSystem, IAudioService audioService, GameplayStorage storage)
         {
             _economicSystem = economicSystem ?? throw new ArgumentNullException(nameof(economicSystem));
             _audioService = audioService;
+            _storage = storage;
             _waveSettings = CreateDefaultWaveSettings();
 
             _currentState = new ReactiveProperty<GameState>(GameState.Calm).AddTo(_disposables);
@@ -249,6 +258,18 @@ namespace Services.Gameplay.GameProcessManagement
                 .Where(health => health <= 0)
                 .Subscribe(_ => HandleGameOver())
                 .AddTo(_disposables);
+
+            // _currentState
+            //     .Select(x => x == GameState.WaitingForEnemies)
+            //     .Skip(1)
+            //     .Subscribe(x =>
+            //     {
+            //         if (_storage.enemiesCount.Value <= 0)
+            //         {
+            //             ForceStartCalm();
+            //         }
+            //     })
+            //     .AddTo(_disposables);
         }
 
         private void HandleGameOver()
@@ -264,30 +285,30 @@ namespace Services.Gameplay.GameProcessManagement
 
         private static List<WaveSettings> CreateDefaultWaveSettings() => new List<WaveSettings>
         {
-            new WaveSettings { waveDuration = 5f, enemiesPerWave = 10 },
-            new WaveSettings { waveDuration = 5f, enemiesPerWave = 10 },
-            new WaveSettings { waveDuration = 5f, enemiesPerWave = 10 },
-            new WaveSettings { waveDuration = 10f, enemiesPerWave = 15 },
-            new WaveSettings { waveDuration = 20f, enemiesPerWave = 20 },
-            new WaveSettings { waveDuration = 30f, enemiesPerWave = 25 },
-            new WaveSettings { waveDuration = 40f, enemiesPerWave = 30 },
-            new WaveSettings { waveDuration = 50f, enemiesPerWave = 35 },
-            new WaveSettings { waveDuration = 60f, enemiesPerWave = 40 },
-            new WaveSettings { waveDuration = 70f, enemiesPerWave = 45 },
-            new WaveSettings { waveDuration = 80f, enemiesPerWave = 50 },
-            new WaveSettings { waveDuration = 90f, enemiesPerWave = 55 },
-            new WaveSettings { waveDuration = 100f, enemiesPerWave = 60 },
-            new WaveSettings { waveDuration = 110f, enemiesPerWave = 65 },
-            new WaveSettings { waveDuration = 120f, enemiesPerWave = 70 },
-            new WaveSettings { waveDuration = 130f, enemiesPerWave = 75 },
-            new WaveSettings { waveDuration = 140f, enemiesPerWave = 80 },
-            new WaveSettings { waveDuration = 150f, enemiesPerWave = 85 },
-            new WaveSettings { waveDuration = 160f, enemiesPerWave = 90 },
-            new WaveSettings { waveDuration = 170f, enemiesPerWave = 95 },
-            new WaveSettings { waveDuration = 180f, enemiesPerWave = 100 },
-            new WaveSettings { waveDuration = 190f, enemiesPerWave = 210 },
-            new WaveSettings { waveDuration = 200f, enemiesPerWave = 220 },
-            new WaveSettings { waveDuration = 210f, enemiesPerWave = 1250 },
+            new(1f, 1),
+            new(10f, 5),
+            new(5f, 10),
+            new(10f, 15),
+            new(20f, 20),
+            new(30f, 25),
+            new(40f, 30),
+            new(50f, 35),
+            new(60f, 40),
+            new(70f, 45),
+            new(80f, 50),
+            new(90f, 55),
+            new(100f, 60),
+            new(110f, 65),
+            new(120f, 70),
+            new(130f, 75),
+            new(140f, 80),
+            new(150f, 85),
+            new(160f, 90),
+            new(170f, 95),
+            new(180f, 100),
+            new(190f, 210),
+            new(200f, 220),
+            new(210f, 1250),
         };
     }
 }

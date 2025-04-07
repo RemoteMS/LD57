@@ -64,6 +64,7 @@ namespace Services.Gameplay.Controls
             // Horizontal
             if (Input.GetKey(KeyCode.A)) // По часовой стрелке
             {
+                Debug.LogWarning("pressed");
                 _currentAngle -= horizontalRotationSpeed * Time.deltaTime * mult;
                 horizontal.Rotate(0f, -horizontalRotationSpeed * Time.deltaTime * mult * 10, 0f, Space.Self);
             }

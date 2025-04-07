@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using PrimeTween;
 using Reflex.Attributes;
 using Services.Gameplay.GameProcessManagement;
 using Services.Global.ScenesManagement;
@@ -8,13 +9,13 @@ using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
+using Cysharp.Threading.Tasks; // Добавлен для UniTask
 
 namespace UI.Gameplay
 {
     public class WorldData : MonoBehaviour, IDisposable
     {
         [SerializeField] private TMP_Text waveTimeRemaining_new;
-
         [SerializeField] private TMP_Text currentState;
         [SerializeField] private TMP_Text remainingEnemies;
         [SerializeField] private TMP_Text waveTimeRemaining;
@@ -30,8 +31,8 @@ namespace UI.Gameplay
 
         private readonly CompositeDisposable _disposables = new();
         private GameProcessManager _gameProcessManager;
-
         private ISceneLoader _sceneLoader;
+        private Tween _currentTween;
 
         [Inject]
         public void Inject(GameProcessManager gameProcessManager, GameplayStorage gameplayStorage,
@@ -79,16 +80,47 @@ namespace UI.Gameplay
                 })
                 .AddTo(_disposables);
 
-
             _gameProcessManager.hasLost
                 .Where(x => x)
                 .Subscribe(x => { ShowGameOverWindow(); })
                 .AddTo(_disposables);
 
-            _gameProcessManager.currentWaveIndex.Subscribe(x => { currentWaveIndex.text = x.ToString(); })
+            _gameProcessManager.currentWaveIndex
+                .Subscribe(x => { currentWaveIndex.text = x.ToString(); })
                 .AddTo(_disposables);
 
-            gameplayStorage.enemiesCount.Subscribe(x => { enemiesCount.text = x.ToString(); }).AddTo(_disposables);
+            gameplayStorage.enemiesCount
+                .Subscribe(ChangeEnemiesCount)
+                .AddTo(_disposables);
+        }
+
+        private void ChangeEnemiesCount(int x)
+        {
+            enemiesCount.text = x.ToString();
+            
+            if (_currentTween.isAlive)
+            {
+                _currentTween.Stop();
+            }
+            
+            FlashTextAsync().Forget();
+        }
+
+        private async UniTaskVoid FlashTextAsync()
+        {
+            const float duration = 0.2f; 
+            
+            _currentTween = Tween.Color(enemiesCount, Color.white, Color.red, duration, Ease.InOutQuad);
+            await _currentTween.ToUniTask();
+            
+            _currentTween = Tween.Color(enemiesCount, Color.red, Color.white, duration, Ease.InOutQuad);
+            await _currentTween.ToUniTask();
+            
+            _currentTween = Tween.Color(enemiesCount, Color.white, Color.red, duration, Ease.InOutQuad);
+            await _currentTween.ToUniTask();
+            
+            _currentTween = Tween.Color(enemiesCount, Color.red, Color.white, duration, Ease.InOutQuad);
+            await _currentTween.ToUniTask();
         }
 
         private void ShowGameOverWindow()
@@ -102,6 +134,10 @@ namespace UI.Gameplay
         public void Dispose()
         {
             _disposables?.Dispose();
+            if (_currentTween.isAlive)
+            {
+                _currentTween.Stop();
+            }
         }
 
         private void OnDestroy()

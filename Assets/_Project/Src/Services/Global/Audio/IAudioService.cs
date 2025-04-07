@@ -7,6 +7,7 @@ namespace Services.Global.Audio
     {
         void Bind(GameObject audioSource);
         void InjectSource(AudioSource source, SourceType sourceName);
+        void UnInjectSource(SourceType sourceName);
         void StopPlaying();
         void StartPlaying();
         void InjectAudioMixer(AudioMixer mixer);

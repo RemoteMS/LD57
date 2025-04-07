@@ -100,7 +100,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeButton: {fileID: 1637479911267099332}
   currentLevel: {fileID: 2882141875581438019}
-  cost: {fileID: 5918227517433367108}
+  cost: {fileID: 6722686213866375228}
   currentValue: {fileID: 454212231540757713}
   nextValue: {fileID: 1008991523198381842}
   label: {fileID: 7315902546572253270}

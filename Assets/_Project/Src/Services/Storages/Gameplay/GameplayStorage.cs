@@ -38,7 +38,8 @@ namespace Services.Storages.Gameplay
         public void KillEnemy(IEffectable target)
         {
             _enemies.Remove(target);
-            Object.Destroy(target.GameObject);
+            if (target.GameObject)
+                Object.Destroy(target.GameObject);
         }
 
         public void Dispose()

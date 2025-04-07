@@ -47,7 +47,7 @@ namespace UI.Gameplay.UpgradesPanels
                 .AddTo(_disposables);
 
             economicSystem.coinsCount
-                .Select(x => x > data.nextCost.Value)
+                .Select(x => x >= data.nextCost.Value)
                 .Subscribe(x => { upgradeButton.interactable = x; })
                 .AddTo(_disposables);
             data.currentValue.Subscribe(x => { currentValue.text = x.ToString(); })
@@ -88,7 +88,7 @@ namespace UI.Gameplay.UpgradesPanels
                 .AddTo(_disposables);
 
             economicSystem.coinsCount
-                .Select(x => x > data.nextCost.Value)
+                .Select(x => x >= data.nextCost.Value)
                 .Subscribe(x => { upgradeButton.interactable = x; })
                 .AddTo(_disposables);
 

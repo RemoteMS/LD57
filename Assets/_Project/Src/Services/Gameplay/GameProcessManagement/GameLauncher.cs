@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using Reflex.Attributes;
 using Services.Gameplay.BulletSystem;
@@ -9,11 +10,13 @@ using UnityEngine;
 
 namespace Services.Gameplay.GameProcessManagement
 {
-    public class GameLauncher : MonoBehaviour
+    public class GameLauncher : MonoBehaviour, IDisposable
     {
         private GameProcessManager _gameProcessManager;
         private EconomicSystem _economicSystem;
         private GameplayStorage _gameplayStorage;
+
+        private CompositeDisposable _disposables = new();
 
         [Inject]
         private void Inject(GameProcessManager manager, EconomicSystem economicSystem, GameplayStorage gameplayStorage)
@@ -51,9 +54,7 @@ namespace Services.Gameplay.GameProcessManagement
                 {
                     _gameProcessManager.ForceStartCalm();
                 }
-                // if (_economicSystem.)
             }
-
 #if UNITY_EDITOR
             if (Input.GetKeyDown(KeyCode.Z))
             {
@@ -91,7 +92,12 @@ namespace Services.Gameplay.GameProcessManagement
 
         private void OnDestroy()
         {
-            // _gameProcessManager?.Dispose(); // Очищаем ресурсы при уничтожении
+            Dispose(); // _gameProcessManager?.Dispose(); // Очищаем ресурсы при уничтожении
+        }
+
+        public void Dispose()
+        {
+            _disposables?.Dispose();
         }
     }
 

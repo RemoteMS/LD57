@@ -1,3 +1,4 @@
+using System;
 using Reflex.Attributes;
 using UnityEngine;
 
@@ -8,10 +9,18 @@ namespace Services.Global.Audio
         [SerializeField] private SourceType audioSourceName;
         [SerializeField] private AudioSource source;
 
+        private IAudioService _audioService;
+
         [Inject]
         public void Inject(IAudioService audioService)
         {
-            audioService.InjectSource(source, audioSourceName);
+            _audioService = audioService;
+            _audioService.InjectSource(source, audioSourceName);
+        }
+
+        private void OnDestroy()
+        {
+            _audioService?.UnInjectSource(audioSourceName);
         }
     }
 }

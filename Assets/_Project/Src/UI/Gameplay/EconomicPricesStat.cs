@@ -4,6 +4,8 @@ using Services.Gameplay.Economic;
 using TMPro;
 using UniRx;
 using UnityEngine;
+using PrimeTween;
+using Cysharp.Threading.Tasks;
 
 namespace UI.Gameplay
 {
@@ -13,6 +15,7 @@ namespace UI.Gameplay
         [SerializeField] private TMP_Text _playerHealthText;
 
         private readonly CompositeDisposable _disposables = new();
+        private Tween _currentTween;
 
         [Inject]
         public void Inject(EconomicSystem economicSystem)
@@ -22,14 +25,46 @@ namespace UI.Gameplay
                 .AddTo(_disposables);
 
             economicSystem.globalHealthCount
-                .Subscribe(
-                    x => { _playerHealthText.text = x.ToString(); })
+                .Subscribe(ChangeHealthText)
                 .AddTo(_disposables);
+        }
+
+        private void ChangeHealthText(int x)
+        {
+            _playerHealthText.text = x.ToString();
+
+            if (_currentTween.isAlive)
+            {
+                _currentTween.Stop();
+            }
+
+            FlashTextAsync().Forget();
+        }
+
+        private async UniTaskVoid FlashTextAsync()
+        {
+            const float duration = 0.2f;
+
+            _currentTween = Tween.Color(_playerHealthText, Color.white, Color.red, duration, Ease.InOutQuad);
+            await _currentTween.ToUniTask();
+
+            _currentTween = Tween.Color(_playerHealthText, Color.red, Color.white, duration, Ease.InOutQuad);
+            await _currentTween.ToUniTask();
+
+            _currentTween = Tween.Color(_playerHealthText, Color.white, Color.red, duration, Ease.InOutQuad);
+            await _currentTween.ToUniTask();
+
+            _currentTween = Tween.Color(_playerHealthText, Color.red, Color.white, duration, Ease.InOutQuad);
+            await _currentTween.ToUniTask();
         }
 
         public void Dispose()
         {
             _disposables?.Dispose();
+            if (_currentTween.isAlive)
+            {
+                _currentTween.Stop();
+            }
         }
 
         private void OnDestroy()

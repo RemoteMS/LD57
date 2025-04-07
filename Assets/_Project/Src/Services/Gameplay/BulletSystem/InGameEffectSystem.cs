@@ -14,7 +14,8 @@ namespace Services.Gameplay.BulletSystem
         private readonly IDataManager _resourceManager;
         private readonly GameplayStorage _gameplayStorage;
 
-        public InGameEffectSystem(EconomicSystem economicSystem, IDataManager resourceManager, GameplayStorage gameplayStorage)
+        public InGameEffectSystem(EconomicSystem economicSystem, IDataManager resourceManager,
+            GameplayStorage gameplayStorage)
         {
             _economicSystem = economicSystem;
             _resourceManager = resourceManager;
@@ -57,18 +58,19 @@ namespace Services.Gameplay.BulletSystem
             //     impactIdentity
             // );
             // impactEffect.transform.up = up;
-            
+
             impactEffectPrefab.transform.position = impactPosition;
             impactEffectPrefab.transform.rotation = impactIdentity;
             impactEffectPrefab.transform.up = up;
 
-            Object.Destroy(impactEffectPrefab, timeToDestroy);
+            if (impactEffectPrefab)
+                Object.Destroy(impactEffectPrefab, timeToDestroy);
         }
 
         public void EnemyExitLevel(IEffectable effectable)
         {
             _economicSystem.DamageToPlayer(effectable);
-            Object.Destroy(effectable.GameObject);
+            _gameplayStorage.KillEnemy(effectable);
         }
 
         public void Dispose()
